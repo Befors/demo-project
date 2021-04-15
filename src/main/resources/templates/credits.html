@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Credits</title>
+    <style>
+        a {
+            text-decoration: none;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+<h2>Credits</h2>
+<a href="/">
+    <button>Back</button>
+</a>
+<label><input type="number" step="0.01" min="0" placeholder="Limit" id="createLimitInput"/>₽</label>
+<label><input type="number" step="0.01" min="0" placeholder="Interest rate" id="createInterestInput"/>%</label>
+<button class="createBtn">Create credit</button>
+<table border="1" cellspacing="0" cellpadding="5">
+    <tr>
+        <th>Limit</th>
+        <th>Interest rate</th>
+        <th>Actions</th>
+    </tr>
+    <tr th:each="credit : ${credits}" th:data-credit-id="${credit.id}">
+        <td>
+            <label><input type="number" step="0.01" min="0" th:value="${credit.limit}" class="limitInput"/>₽</label>
+        </td>
+        <td>
+            <label><input type="number" step="0.01" min="0" th:value="${credit.interestRate}" class="interestInput"/>%</label>
+        </td>
+        <td>
+            <button class="editBtn">Edit</button>
+            <button class="deleteBtn">Delete</button>
+        </td>
+    </tr>
+</table>
+<script th:src="@{//webjars/jquery/jquery.min.js}"></script>
+<script>
+
+    $(document).ready(function () {
+        $(".createBtn").click(function (event) {
+            event.preventDefault();
+
+            $.ajax({
+                type: "POST",
+                url: "/api/credits",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    limit: $("#createLimitInput").val(),
+                    interestRate: $("#createInterestInput").val()
+                }),
+                success: function () {
+                    location.reload();
+                }
+            })
+        })
+        $(".editBtn").click(function (event) {
+            let parentTr = findParentTr(event);
+            let id = parentTr.dataset.creditId;
+
+            $.ajax({
+                type: "PUT",
+                url: `/api/credits/${id}`,
+                contentType: "application/json",
+                data: JSON.stringify({
+                    limit: $(parentTr).find(".limitInput")[0].value,
+                    interestRate: $(parentTr).find(".interestInput")[0].value
+                })
+            })
+        })
+        $(".deleteBtn").click(function (event) {
+            let parentTr = findParentTr(event);
+            let id = parentTr.dataset.creditId;
+
+            $.ajax({
+                type: "POST",
+                url: `/api/credits/${id}/activity`,
+                success: function () {
+                    location.reload();
+                }
+            })
+        })
+    })
+
+    function findParentTr(event) {
+        let target = event.target;
+        return target.closest("tr");
+    }
+
+</script>
+</body>
+</html>

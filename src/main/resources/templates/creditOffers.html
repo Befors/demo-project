@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Credit offers</title>
+    <style>
+        a {
+            text-decoration: none;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+<a href="/account">
+    <button>Back</button>
+</a>
+<table border="1" cellspacing="0" cellpadding="5">
+    <tr>
+        <th>Credit info</th>
+        <th>Date</th>
+        <th>Total</th>
+        <th>Body sum</th>
+        <th>Interest sum</th>
+    </tr>
+    <th:block th:each="creditOffer : ${creditOffers}">
+        <tr th:each="payment, state : ${creditOffer.payments}">
+            <td th:if="${state.first}" th:rowspan="${creditOffer.payments.size()}"
+                th:utext="@{'Bank: ' + ${creditOffer.bankName} + '</br>Credit Interest Rate: ' + ${creditOffer.credit.interestRate} + ' %'}"></td>
+            <td th:text="${payment.date}"></td>
+            <td th:text="${payment.total}"></td>
+            <td th:text="${payment.bodySum}"></td>
+            <td th:text="${payment.interestSum}"></td>
+        </tr>
+    </th:block>
+</table>
+</body>
+</html>

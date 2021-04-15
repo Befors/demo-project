@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Signing credit offer</title>
+    <style>
+        a {
+            text-decoration: none;
+            color: black;
+        }
+    </style>
+    <link th:href="@{//webjars/chosen/chosen.css}" type="text/css" rel="stylesheet">
+</head>
+<body>
+<h2>Signing credit offer</h2>
+<a href="/account">
+    <button>Back</button>
+</a>
+<form id="form-details">
+    <div>
+        <label>Bank
+            <select data-placeholder="Choose a bank..." class="chosen-select" name="banks">
+                <option th:each="bank : ${banks}" th:value="${bank.id}"
+                        th:text="${bank.name}"></option>
+            </select>
+        </label>
+    </div>
+    <div>
+        <label>Credits
+            <select data-placeholder="Choose a credit..."
+                    class="chosen-select" name="credits" style="display: block">
+            </select>
+        </label>
+    </div>
+    <div>
+        <label>
+            <input type="number" placeholder="Sum you want" name="total"/>
+        </label>
+    </div>
+    <div>
+        <label>
+            <input type="month" name="endDate"/>
+        </label>
+    </div>
+    <button id="signBtn">Sign</button>
+</form>
+<script th:src="@{//webjars/jquery/jquery.min.js}"></script>
+<script th:src="@{//webjars/chosen/chosen.jquery.js}"></script>
+<script th:src="@{//webjars/chosen/chosen.proto.js}"></script>
+<script th:inline="javascript">
+
+    /*<![CDATA[*/
+
+    $(document).ready(function () {
+        const banks = [[${banks}]];
+
+        const date = new Date();
+        const month = ("0" + (date.getMonth() + 2)).slice(-2);
+        const year = date.getFullYear();
+        let endDateInput = $("input[name='endDate']");
+
+        endDateInput.val(`${year}-${month}`);
+        endDateInput.attr("min", `${year}-${month}`);
+
+        let banksSelect = $("select[name='banks']");
+
+        banksSelect.change(function (event) {
+            event.preventDefault();
+            let currentBankId = banksSelect.val();
+            let creditsSelect = $("select[name='credits']");
+            let currentBank = banks.filter(bank => bank.id === currentBankId)[0];
+            let html = "";
+
+            for (let credit of currentBank.credits) {
+                html += "<option value=" + credit.id + ">Max: " + credit.limit + " ₽,   Interest Rate: "
+                    + credit.interestRate + " %</option>";
+            }
+
+            creditsSelect.html(html);
+            creditsSelect.trigger("chosen:updated");
+        })
+
+        $("#signBtn").click(function (event) {
+            event.preventDefault();
+
+            let creditOfferDto = getFormData();
+
+            $.ajax({
+                url: "/api/clients/credit-offers",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(creditOfferDto),
+                success: function () {
+                    location.href = "/credit-offers";
+                },
+                error: function (xhr) {
+                    alert(xhr.responseJSON.errors);
+                }
+            })
+        })
+
+        $(".chosen-select").chosen({
+            width: "20%",
+            no_results_text: "Oops, nothing found!"
+        })
+
+        banksSelect.trigger("change");
+    })
+
+    function getFormData() {
+        let $that = $("#form-details");
+        let formData = $that.serializeArray();
+        let dto = {};
+
+        $(formData).each(function (index, obj) {
+            if (obj.value !== "") {
+                dto[obj.name] = obj.value;
+            }
+        });
+
+        let endDate = new Date(dto.endDate);
+
+        endDate.setDate(new Date().getDate());
+
+        dto.endDate = endDate;
+        dto.bank = $("select[name='banks']").val();
+        dto.credit = $("select[name='credits']").val();
+
+        return dto;
+    }
+
+    /*]]>*/
+</script>
+</body>
+</html>

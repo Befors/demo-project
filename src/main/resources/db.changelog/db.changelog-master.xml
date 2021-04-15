@@ -1,0 +1,211 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet id="2021-04-12 create tables for all entities" author="Befors">
+        <createTable tableName="client">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="first_name" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="patronymic" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone_number" type="char(11)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="password" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="passport_series" type="char(6)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="varchar(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="bank">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="credit">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="limit" type="double">
+                <constraints nullable="false"/>
+            </column>
+            <column name="interest_rate" type="real">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="credit_offer">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="client_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_credit_offer_client_id"
+                             references="client(id)"/>
+            </column>
+            <column name="credit_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_credit_offer_credit_id"
+                             references="credit(id)"/>
+            </column>
+            <column name="bank_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_credit_offer_bank_id"
+                             references="bank(id)"/>
+            </column>
+            <column name="total" type="double">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_date" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_date" type="date">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <createTable tableName="payment">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="credit_offer_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_payment_credit_offer_id"
+                             references="credit_offer(id)"/>
+            </column>
+            <column name="date" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total" type="double">
+                <constraints nullable="false"/>
+            </column>
+            <column name="body_sum" type="double">
+                <constraints nullable="false"/>
+            </column>
+            <column name="interest_sum" type="double">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <createTable tableName="client_bank">
+            <column name="client_id" type="UUID">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_client_bank"
+                             foreignKeyName="fk_cb_client_id"
+                             references="client(id)"/>
+            </column>
+            <column name="bank_id" type="UUID">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_client_bank"
+                             foreignKeyName="fk_cb_bank_id"
+                             references="bank(id)"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="bank_credit">
+            <column name="bank_id" type="UUID">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_bank_credit"
+                             foreignKeyName="fk_bc_bank_id"
+                             references="bank(id)"/>
+            </column>
+            <column name="credit_id" type="UUID">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_bank_credit"
+                             foreignKeyName="fk_bc_credit_id"
+                             references="credit(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2021-04-12 insert test data" author="Befors">
+        <insert tableName="client">
+            <column name="id" value="5e9249a9-b947-4772-8cf1-2711f5b43c0e"/>
+            <column name="first_name" value="Александр"/>
+            <column name="last_name" value="Вакуленко"/>
+            <column name="patronymic" value="Аркадьевич"/>
+            <column name="phone_number" value="79567089114"/>
+            <column name="email" value="avakulenko@yandex.ru"/>
+            <column name="password" value="123456"/>
+            <column name="passport_series" value="123456"/>
+            <column name="role" value="ADMIN"/>
+            <column name="active" value="true"/>
+        </insert>
+        <insert tableName="client">
+            <column name="id" value="e195d38e-9d3c-11eb-a8b3-0242ac130003"/>
+            <column name="first_name" value="Денис"/>
+            <column name="last_name" value="Глушко"/>
+            <column name="patronymic" value="Кириллович"/>
+            <column name="phone_number" value="79438699023"/>
+            <column name="email" value="dglushko@gmail.com"/>
+            <column name="password" value="123456"/>
+            <column name="passport_series" value="654321"/>
+            <column name="role" value="CLIENT"/>
+            <column name="active" value="true"/>
+        </insert>
+        <insert tableName="credit">
+            <column name="id" value="15c2d278-9cee-11eb-a8b3-0242ac130003"/>
+            <column name="limit" value="1000000"/>
+            <column name="interest_rate" value="7"/>
+            <column name="active" value="true"/>
+        </insert>
+        <insert tableName="credit">
+            <column name="id" value="15c2d4c6-9cee-11eb-a8b3-0242ac130003"/>
+            <column name="limit" value="750000"/>
+            <column name="interest_rate" value="6.3"/>
+            <column name="active" value="true"/>
+        </insert>
+        <insert tableName="credit">
+            <column name="id" value="15c31738-9cee-11eb-a8b3-0242ac130003"/>
+            <column name="limit" value="500000"/>
+            <column name="interest_rate" value="4.5"/>
+            <column name="active" value="true"/>
+        </insert>
+        <insert tableName="bank">
+            <column name="id" value="15c3188c-9cee-11eb-a8b3-0242ac130003"/>
+            <column name="name" value="Tinkoff"/>
+            <column name="active" value="true"/>
+        </insert>
+        <insert tableName="bank_credit">
+            <column name="bank_id" value="15c3188c-9cee-11eb-a8b3-0242ac130003"/>
+            <column name="credit_id" value="15c2d4c6-9cee-11eb-a8b3-0242ac130003"/>
+        </insert>
+        <insert tableName="bank_credit">
+            <column name="bank_id" value="15c3188c-9cee-11eb-a8b3-0242ac130003"/>
+            <column name="credit_id" value="15c31738-9cee-11eb-a8b3-0242ac130003"/>
+        </insert>
+        <insert tableName="bank">
+            <column name="id" value="15c31968-9cee-11eb-a8b3-0242ac130003"/>
+            <column name="name" value="Sberbank"/>
+            <column name="active" value="true"/>
+        </insert>
+        <insert tableName="bank_credit">
+            <column name="bank_id" value="15c31968-9cee-11eb-a8b3-0242ac130003"/>
+            <column name="credit_id" value="15c2d278-9cee-11eb-a8b3-0242ac130003"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home page</title>
+    <style>
+        a {
+            text-decoration: none;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+<h2>Home page</h2>
+<a th:if="${client != null}" href="/logout">
+    <button>Logout</button>
+</a>
+<a th:if="${client == null}" href="/login">
+    <button>Log In</button>
+</a>
+<a th:if="${client == null}" href="/registration">
+    <button>Register</button>
+</a>
+<a sec:authorize="hasRole('ADMIN')" href="/admin/banks">
+    <button>Banks</button>
+</a>
+<a sec:authorize="hasRole('ADMIN')" href="/admin/credits">
+    <button>Credits</button>
+</a>
+<a sec:authorize="isAuthenticated()" href="/account">
+    <button>Personal account</button>
+</a>
+<a sec:authorize="isAuthenticated()" id="deleteBtn">
+    <button>Delete account</button>
+</a>
+<script th:src="@{//webjars/jquery/jquery.min.js}"></script>
+<script>
+
+    $("#deleteBtn").click(function (event) {
+        event.preventDefault();
+
+        $.ajax({
+            url: "/api/clients/activity",
+            type: "POST",
+            success: function () {
+                location.href = `/logout`;
+            },
+            error: function (xhr) {
+                alert(xhr.responseJSON.errors);
+            }
+        })
+    })
+
+</script>
+</body>
+</html>

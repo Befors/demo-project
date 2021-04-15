@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Saving bank</title>
+    <style>
+        a {
+            text-decoration: none;
+            color: black;
+        }
+    </style>
+    <link th:href="@{//webjars/chosen/chosen.css}" type="text/css" rel="stylesheet">
+</head>
+<body>
+<a href="/admin/banks">
+    <button>Back</button>
+</a>
+<div>
+    <form id="form-details">
+        <div>
+            <label>
+                <input placeholder="Name" name="name" th:value="${current.name}"/>
+            </label>
+        </div>
+        <div>
+            <label>Credits
+                <select data-placeholder="Choose a credit..."
+                        multiple class="chosen-select" name="credits">
+                    <option th:each="credit : ${credits}" th:value="${credit.id}"
+                            th:text="@{'Max: ' + ${credit.limit} + ' ₽,   Interest Rate: ' + ${credit.interestRate} + ' %'}"></option>
+                </select>
+            </label>
+        </div>
+        <button id="createBtn">Create</button>
+        <button hidden id="updateBtn">Update</button>
+    </form>
+</div>
+<script th:src="@{//webjars/jquery/jquery.min.js}"></script>
+<script th:src="@{//webjars/chosen/chosen.jquery.js}"></script>
+<script th:src="@{//webjars/chosen/chosen.proto.js}"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    $(document).ready(function () {
+        let credits = [[${current.credits}]];
+        let id = [[${current.id}]];
+        let creditsIds;
+
+        if (credits != null) {
+            creditsIds = credits.map(credit => credit.id);
+        }
+
+        $("select[name='credits']").val(creditsIds);
+
+        let createBtn = $("#createBtn");
+        let updateBtn = $("#updateBtn");
+
+        if (id != null) {
+            createBtn.toggle(false);
+            updateBtn.toggle(true);
+        }
+
+        createBtn.click(function (event) {
+            event.preventDefault();
+            let bankDto = getFormData();
+
+            $.ajax({
+                url: "/api/banks",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(bankDto),
+                success: function(response) {
+                    location.href = `/admin/banks/save?id=${response}`;
+                },
+                error: function (xhr) {
+                    alert(xhr.responseJSON.errors);
+                }
+            })
+        })
+
+        updateBtn.click(function (event) {
+            event.preventDefault();
+            let bankDto = getFormData();
+            bankDto.id = id;
+
+            $.ajax({
+                url: `/api/banks/${id}`,
+                type: "PUT",
+                contentType: "application/json",
+                data: JSON.stringify(bankDto),
+                error: function (xhr) {
+                    alert(xhr.responseJSON);
+                }
+            })
+        })
+
+        $(".chosen-select").chosen({
+            width: "20%",
+            no_results_text: "Oops, nothing found!"
+        })
+    })
+
+    function getFormData() {
+        let $that = $("#form-details");
+        let formData = $that.serializeArray();
+        let dto = {};
+
+        $(formData).each(function (index, obj) {
+            if (obj.value !== "") {
+                dto[obj.name] = obj.value;
+            }
+        });
+
+        dto.credits = $("select[name='credits']").val();
+
+        return dto;
+    }
+
+    /*]]>*/
+</script>
+</body>
+</html>

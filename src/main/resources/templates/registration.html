@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Registration</title>
+    <style>
+        a {
+            text-decoration: none;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+<h2>Registration</h2>
+<form id="form-details">
+    <div>
+        <label>
+            <input placeholder="First name" name="firstName"/>
+        </label>
+    </div>
+    <div>
+        <label>
+            <input placeholder="Last name" name="lastName"/>
+        </label>
+    </div>
+    <div>
+        <label>
+            <input placeholder="Patronymic" name="patronymic"/>
+        </label>
+    </div>
+    <div>
+        <label>
+            <input placeholder="Phone number" name="phoneNumber"/>
+        </label>
+    </div>
+    <div>
+        <label>
+            <input placeholder="Email" name="email"/>
+        </label>
+    </div>
+    <div>
+        <label>
+            <input type="password" placeholder="Password" name="password"/>
+        </label>
+    </div>
+    <div>
+        <label>
+            <input placeholder="Passport series" name="passportSeries"/>
+        </label>
+    </div>
+    <button id="registerBtn">Register</button>
+</form>
+<script th:src="@{//webjars/jquery/jquery.min.js}"></script>
+<script>
+
+    $(document).ready(function () {
+        $("#registerBtn").click(function (event) {
+            event.preventDefault();
+
+            let clientDto = getFormData();
+
+            $.ajax({
+                url: "/api/clients",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(clientDto),
+                success: function () {
+                    location.href = "/";
+                },
+                error: function (xhr) {
+                    alert(xhr.responseJSON.errors);
+                }
+            })
+        })
+    })
+
+    function getFormData() {
+        let $that = $("#form-details");
+        let formData = $that.serializeArray();
+        let dto = {};
+
+        $(formData).each(function (index, obj) {
+            if (obj.value !== "") {
+                dto[obj.name] = obj.value;
+            }
+        });
+
+        return dto;
+    }
+</script>
+</body>
+</html>

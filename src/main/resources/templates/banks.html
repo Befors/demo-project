@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Banks</title>
+    <style>
+        a {
+            text-decoration: none;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+<h2>Banks</h2>
+<p>
+    <a href="/">
+        <button>Back</button>
+    </a>
+    <a href="/admin/banks/save">
+        <button>Create new bank</button>
+    </a>
+</p>
+<table border="1" cellspacing="0" cellpadding="5">
+    <tr>
+        <th>Name</th>
+        <th>Credits</th>
+        <th>Actions</th>
+    </tr>
+    <tr th:each="bank : ${banks}" th:data-bank-id="${bank.id}">
+        <td th:text="${bank.name}"></td>
+        <td>
+            <th:block th:each="credit, state : ${bank.credits}">
+                <span style="display: block" th:text="@{'Max: ' + ${credit.limit} + ' ₽,   Interest Rate: ' + ${credit.interestRate} + ' %'}"></span>
+            </th:block>
+        </td>
+        <td>
+            <a th:href="@{/admin/banks/save(id=${bank.id})}">
+                <button>Edit</button>
+            </a>
+            <button class="deleteBtn">Delete</button>
+        </td>
+    </tr>
+</table>
+<script th:src="@{//webjars/jquery/jquery.min.js}"></script>
+<script>
+
+    $(document).ready(function () {
+        $(".deleteBtn").click(function (event) {
+            let parentTr = findParentTr(event);
+            let id = parentTr.dataset.bankId;
+
+            $.ajax({
+                type: "POST",
+                url: `/api/banks/${id}/activity`,
+                success: function () {
+                    location.reload();
+                }
+            })
+        })
+    })
+
+    function findParentTr(event) {
+        let target = event.target;
+        return target.closest("tr");
+    }
+
+</script>
+</body>
+</html>
